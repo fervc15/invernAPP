@@ -1,0 +1,818 @@
+<html>
+<head>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+
+
+	<link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsenui.css">
+	<link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsen-css-components.min.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+	<script src="https://unpkg.com/onsenui/js/onsenui.min.js"></script>  
+	<link rel="stylesheet" type="text/css" href="css/estilo.css">
+	<script type="text/javascript" src="js/jquery.js"></script>
+
+
+	<script type="text/javascript">
+
+		var arreglo;
+
+
+		var web="https://invernadero123.000webhostapp.com/invernadero/";
+
+
+		document.addEventListener('init', function(event) {
+			var page = event.target;
+
+			if (page.id === 'login') {
+				page.querySelector('#botonEntrar').onclick = function() {
+
+
+					usuario= document.getElementById("usuarioLogin").value;
+					clave = document.getElementById("claveLogin").value;
+
+
+
+					if (usuario.length>0 && clave.length>0)
+					{
+
+
+						$.get(web+"login.php?usuario="+usuario+"&clave="+clave,function(data, status){
+
+
+							arreglo= data;		    		   		
+
+							if(data!="\n\n0\n"){
+
+								arreglo = arreglo.split("\n", 5);
+
+
+								document.querySelector('#myNavigator').pushPage('inicio.html', {data: {title: 'Menu'}});
+
+							}
+							else{
+								ons.notification.alert('El usuario No ha sido Encontrado',{title:"Datos incorrectos"});
+							}
+
+						});
+					}
+					else
+					{
+						ons.notification.alert("Completa los campos faltantes",{title:"Error"});
+					}
+
+				};
+			}
+
+
+			else if (page.id === 'inicio') {
+				page.querySelector('ons-toolbar .center').innerHTML = page.data.title;
+
+
+			} 
+			else if (page.id === 'AgregarPlanta') {
+				page.querySelector('ons-toolbar .center').innerHTML = page.data.title;
+
+
+			} 
+			else if (page.id === 'AgregarInvernadero') {
+				page.querySelector('ons-toolbar .center').innerHTML = page.data.title;
+
+
+			} 
+			else if (page.id === 'EditarPerfil') {
+				page.querySelector('ons-toolbar .center').innerHTML = page.data.title;
+
+
+			} 
+
+
+		});
+
+
+
+
+		document.addEventListener('init',function(event)
+		{
+			page = event.target;
+
+			if (page.id == 'perfil')
+			{
+				cargarDatos()
+
+
+			}
+			if (page.id == 'invernadero')
+			{
+				cargarInvernaderos()
+
+
+			}
+
+			if (page.id=='EditarPerfil')
+			{
+
+				document.getElementById("nombrePropietario").value= arreglo[3];
+				document.getElementById("correoPropietario").value= arreglo[4];
+
+			}
+		});
+
+
+		function cargarDatos()
+		{
+
+			cargarFotoPerfil();
+
+			document.getElementById('propietario').innerHTML="<i class='fas fa-user-alt'></i> Propietario: "+arreglo[3];
+
+			document.getElementById('correo').innerHTML="<i class='fas fa-envelope'></i> Correo: "+arreglo[4];
+
+		}
+
+		function cargarFotoPerfil()
+
+		{
+			$.get(web+"existe.php",function(data, status){
+
+
+				if (data=="1")
+				{
+					document.getElementById('imagenPerfil').innerHTML="<br><img src='https://invernadero123.000webhostapp.com/invernadero/img/perfil.jpg'  class='image'><br>"
+				}
+				else
+				{
+					document.getElementById('imagenPerfil').innerHTML="<br><img src='https://invernadero123.000webhostapp.com/invernadero/img/usuario.jpg'  class='image'><br>"
+				}
+
+			});
+
+
+		}
+
+
+		function EliminarListaPlantas()
+		{
+			document.getElementById('pagina_Plantas').innerHTML='';
+
+		}
+
+
+
+		function EliminarPlanta(idPlanta,idInvernadero)
+		{
+
+			
+			ons.notification.confirm('Esta a punto de eliminar esta planta',{title:"Alerta"}).then(function (respuesta)
+				{
+					if (respuesta=="1")
+					{
+						$.get(web+"EliminarPlanta.php?id="+idPlanta,function(data)
+						{
+							EliminarListaPlantas();
+							cargarPlantas(idInvernadero);
+							ons.notification.alert(data,{title:"La pagina dice"});
+
+
+						})
+					}					
+				})
+			
+		}
+
+
+		function AbrirPaginaPlantas(id_invernadero)
+		{
+						document.querySelector('#myNavigator').pushPage('plantas.html', {data: {title: 'Menu'}});
+
+						cargarPlantas(id_invernadero);
+
+		}
+
+
+
+		function cargarPlantas(id_invernadero)
+		{
+
+
+
+			$.get( web+"plantas.php?id="+id_invernadero, function( data, status )
+			{
+				
+				if(data!="no encontrado\n")
+				{
+
+					data = data.split("\n");
+					
+
+					var text="";
+
+					for (var i = 0; i < data.length-2; i+=4) 
+					{
+
+
+						//$("#pagina_Plantas").before("<ons-card><div class='container' onclick='cargarDescripcionPlanta("+data[i]+")'><div class='row'><div class='col-10'>Nombre: "+data[i+1]+"<br>Cantidad: "+data[i+2]+"<br>Precio: "+data[i+3]+"</div></div></ons-card>")
+						text=document.getElementById("pagina_Plantas").innerHTML;
+
+
+						document.getElementById("pagina_Plantas").innerHTML=text+
+						"<ons-card>\
+							<div class='container'>\
+								<div class='row'>\
+									<div class='col-10' onclick='cargarDescripcionPlanta("+data[i]+")'>"+
+									"Nombre: "+data[i+1]+"<br>Cantidad: "+data[i+2]+"<br>Precio: "+data[i+3]+
+									"</div>\
+									<div class='col-2'>\
+										<ons-button onclick='EliminarPlanta("+data[i]+","+id_invernadero+")'class='btn-danger btn-sm'><i class='fa fa-trash'></i>\
+										</ons-button>\
+									</div>\
+								</div>\
+						</ons-card>"
+
+
+					}
+				}
+				else
+				{
+
+					document.getElementById("pagina_Plantas").innerHTML="<ons-card><div class='container'><div class='row'><div class='col-10'>No Tienes Plantas</div></div></ons-card>";
+				}
+
+			});
+
+		}
+
+
+
+		function cargarDescripcionPlanta(id_planta)
+		{
+			document.querySelector('#myNavigator').pushPage('DescripcionPlanta.html', {data: {title: 'Menu'}});
+
+
+
+			$.get( web+"descripcion.php?id="+id_planta, function( data, status )
+			{
+				
+				if(data!="no encontrado\n")
+				{
+
+					data = data.split("\n");
+				
+
+					document.getElementById("PlantaNombre").innerHTML=data[1];
+
+
+					if (data[3]=="1")
+					{
+
+						document.getElementById("pagina_Planta").innerHTML="<ons-card><div class='container'><div class='row'><div class='col image'> <center><img src='https://invernadero123.000webhostapp.com/invernadero/img/"+data[0]+".jpg'  class='image'></center></div></div><div class='row'><div class='col'>"+data[2]+"</div></div></div></ons-card>";
+
+					}
+					else
+					{
+						document.getElementById("pagina_Planta").innerHTML="<ons-card><div class='container'><div class='row'><div class='col image'> <center><img src='https://invernadero123.000webhostapp.com/invernadero/img/hoja.jpg'  class='image'></center></div></div><div class='row'><div class='col'>"+data[2]+"</div></div></div></ons-card>";
+					}
+
+
+
+				}
+				else
+				{
+
+					$("#pagina_Plantas").before("<ons-card><div class='container'><div class='row'><div class='col-10'>No Hay una descripcion</div></div></ons-card>")
+				}
+
+			});
+
+
+
+		}
+
+
+
+
+
+
+		function EliminarListaInvernaderos()
+		{
+			document.getElementById('pagina_invernadero').innerHTML='';
+
+		}
+
+
+		function EliminarInvernadero(idInvernadero)
+		{
+				ons.notification.confirm('Esta a punto de eliminar este invernadero',{title:"Alerta"}).then(function (respuesta)
+				{
+					if (respuesta=="1")
+					{
+						$.get(web+"EliminarInvernadero.php?id="+idInvernadero,function(data)
+						{
+							EliminarListaInvernaderos();
+							cargarInvernaderos();
+							ons.notification.alert(data,{title:"La pagina dice"});
+
+
+						})
+					}					
+				})
+		}
+
+	function cargarInvernaderos()
+	{
+
+		
+
+
+
+		$.get( web+"invernaderos.php?id="+arreglo[2], function( data, status )
+		{
+
+			if(data!="\nno encontrado\n")
+			{
+
+				data = data.split("\n");
+				
+
+
+				var text="";
+				for (var i = 1; i < data.length-2; i+=3) 
+				{
+
+					text=document.getElementById("pagina_invernadero").innerHTML;
+
+
+				document.getElementById("pagina_invernadero").innerHTML=text+"<ons-card ><div class='container'><div class='row'><div class='col-10' onclick='AbrirPaginaPlantas("+data[i]+")'>Nombre: "+data[i+1]+"<br>Ubicacion: "+data[i+2]+"<br>ID: "+data[i]+"</div><div class='col-2'><ons-button onclick='EliminarInvernadero("+data[i]+")'class='btn-danger btn-sm'><i class='fa fa-trash'></i></ons-button></div></div></ons-card>"
+
+
+
+
+			}
+
+
+		}
+		else
+		{
+
+			document.getElementById("pagina_invernadero").innerHTML="<ons-card><div class='container'><div class='row'><div class='col-10'>No Tienes Invernaderos</div></div></ons-card>";
+		}
+
+	});
+
+	}
+
+
+	function PaginaAgregarPlanta()
+	{
+		document.querySelector('#myNavigator').pushPage('AgregarPlanta.html', {data: {title: 'Agregar Planta'}});
+	}
+
+	function PaginaAgregarInvernadero()
+	{
+		document.querySelector('#myNavigator').pushPage('AgregarInvernadero.html', {data: {title: 'Agregar Invernadero'}});
+	}
+
+	function PaginaEditarPerfil()
+	{
+		document.querySelector('#myNavigator').pushPage('EditarPerfil.html', {data: {title: 'Editar Perfil'}});
+
+
+
+	}
+
+
+	function GuardarInvernadero(nombreI, ubicacionI)
+	{
+
+		if(nombreI.length==0 || ubicacionI.length==0)
+		{
+			ons.notification.alert("Completa los campos faltantes",{title:"Error"});
+			return;
+
+		}
+	
+	
+
+		$.post(web+"RegistrarInvernadero.php", { id_propietario:arreglo[2], nombre : nombreI , ubicacion:ubicacionI})
+		.done(function( data ) {
+
+
+			ons.notification.alert(data,{title:"La pagina dice"});
+			EliminarListaInvernaderos();
+			cargarInvernaderos();
+		})
+
+	}
+
+
+
+
+	function ActualizarPerfil()
+	{
+		nombre =document.getElementById("nombrePropietario").value;
+		correo =document.getElementById("correoPropietario").value;
+		clave = document.getElementById("clavePropietario").value;
+
+
+		if (nombre.length>0 && correo.length>0 && clave.length>0)
+		{
+			document.getElementById('idPropietario').value=arreglo[2];
+
+					 var f = $(this);
+			            var formData = new FormData(document.getElementById("actualizarPerfilForm"));
+			            formData.append("dato", "valor");
+			            //formData.append(f.attr("name"), $(this)[0].files[0]);
+			            $.ajax({
+			                url: web+"ModificarPerfil.php",
+			                type: "post",
+			                dataType: "html",
+			                data: formData,
+			                cache: false,
+			                contentType: false,
+				     processData: false
+			            })
+			                .done(function(data){
+			                   ons.notification.alert(data,{title:"La pagina dice"});
+
+
+			                   arreglo[3]= nombre;
+			                   arreglo[4]= correo;
+			                   cargarDatos();
+			               });
+		}
+		else
+		{
+			ons.notification.alert("Completa los campos faltantes",{title:"Error"});
+		}
+
+		
+           
+
+	}
+
+	function informacionArchivo()
+	{
+		var nombreArchivo = document.getElementById('archivoFoto').files[0].name;
+
+		document.getElementById('labelArchivo').innerHTML = " <i class='fas fa-cloud-upload-alt'></i>"+nombreArchivo;
+	}
+
+
+
+
+
+	function GuardarPlantas()
+	{
+
+		id_invernadero =document.getElementById("idInvernaderoPlanta").value;
+		nombre =document.getElementById("nombrePlanta").value;
+		cantidad =document.getElementById("cantidadPlanta").value;
+		precio = document.getElementById("precioPlanta").value;
+		descripcion = document.getElementById("descripcionPlanta").value;
+
+
+		if (id_invernadero.length>0 && nombre.length>0 && cantidad.length>0 && precio.length>0 && descripcion.length>0)
+		{
+	
+	
+            var f = $(this);
+            var formData = new FormData(document.getElementById("registrarPlantaForm"));
+            formData.append("dato", "valor");
+            //formData.append(f.attr("name"), $(this)[0].files[0]);
+            $.ajax({
+                url: web+"RegistrarPlanta.php",
+                type: "post",
+                dataType: "html",
+                data: formData,
+                cache: false,
+                contentType: false,
+	     processData: false
+            })
+                .done(function(data){
+                   ons.notification.alert(data,{title:"La pagina dice"});
+               });
+
+        }
+        else
+		{
+			ons.notification.alert("Completa los campos faltantes",{title:"Error"});
+		}
+           
+
+	}
+
+</script>
+
+</head>
+	<body>
+
+	<!-- LOGIN-->
+
+	<ons-navigator swipeable id="myNavigator" page="login.html"></ons-navigator>
+
+	<template id="login.html">
+		<ons-page id="login">
+			<ons-toolbar>
+				<div class="center">Iniciar Sesion</div>
+			</ons-toolbar>
+
+
+			<div class="container">
+				<div class="row">
+					<div class="col">
+						<center>
+							<br>
+						<img src="https://invernadero123.000webhostapp.com/invernadero/img/logo.png" width="300">
+						</center>
+					</div>
+						
+				</div>
+
+
+
+				<div style="text-align: center; margin-top: 30px;">
+					
+					<p>
+						<ons-input id="usuarioLogin" modifier="underbar" class="btn btn-block" placeholder="Usuario" float></ons-input>
+					</p>
+					<p>
+						<ons-input id="claveLogin" modifier="underbar" class="btn btn-block" type="password" placeholder=" clave" float></ons-input>
+					</p>
+
+					<p style="margin-top: 30px;">
+						<ons-button class="btn btn-block" id="botonEntrar" o >Entrar   <i class="fas fa-sign-in-alt" style="color:#fff;"></i>
+						</ons-button>
+					</p>
+
+
+				</div>
+
+
+
+			</div>
+
+
+		</ons-page>
+	</template>
+
+	<template id="inicio.html">
+		<ons-page id="inicio">
+
+			<ons-page>
+				<ons-toolbar>
+					<div class="left"><ons-back-button>Salir</ons-back-button></div>
+
+
+				</ons-toolbar>
+
+				<ons-tabbar swipeable position="auto">
+					<ons-tab page="perfil.html" label="Perfil" icon="ion-home, material:md-home"  active>
+					</ons-tab>
+					<ons-tab page="invernadero.html" label="Invernadero" icon="fa-spa">
+
+					</ons-tab>
+					<ons-tab page="registro.html" label="Registro" icon="fa-pencil-alt">
+					</ons-tab>
+
+				</ons-tabbar>
+			</ons-page>
+
+			<template id="perfil.html">
+				<ons-page id="perfil">
+
+					<div class="container">
+
+						<div id="imagenPerfil" style="text-align: center;">
+
+						</div>
+
+						<div id="propietario"></div>
+						<div id="correo"></div>
+					</div>
+				</ons-page>
+			</template>
+
+
+
+
+			<template id="invernadero.html">
+				<ons-page id="invernadero">
+
+
+					<div class="container" id="pagina_invernadero">		
+
+
+
+					</div>
+
+				</ons-page>
+			</template>
+
+
+			<template id="registro.html">
+				<ons-page id="registro">
+					<div class="container">
+						<br>
+						<ons-button id="btn-editar" class="btn btn-block" onclick="PaginaEditarPerfil()"> Editar Perfil <i class="button_icon fas fa-pencil-alt"></i></ons-button>
+						<ons-button id="btn-planta" class="btn btn-block" onclick="PaginaAgregarPlanta()"> Agregar Planta <i class="button_icon fas fa-spa"></i></ons-button>
+						<ons-button id="btn-invernadero" class="btn btn-block" onclick="PaginaAgregarInvernadero()"> Agregar Invernadero <i class="button_icon fas fa-building"></i></ons-button>
+
+
+					</div>
+				</ons-page>
+			</template>
+
+		</ons-page>
+	</template>
+
+
+	<!------PLANTAS ------>
+
+
+	<template id="plantas.html">
+		<ons-page id="plantas">
+			<ons-toolbar>
+				<div class="center">Plantas</div>
+				<div class="left"><ons-back-button>Page 1</ons-back-button></div>
+
+			</ons-toolbar>
+
+
+			<div class="container"  id="pagina_Plantas">
+
+
+			</div>
+
+
+		</ons-page>
+	</template>
+
+
+	<!----- PLANTA INDIVIDUAL -->
+
+	<template id="DescripcionPlanta.html">
+		<ons-page id="DescripcionPlanta">
+			<ons-toolbar>
+				<div class="center" id="PlantaNombre"></div>
+				<div class="left"><ons-back-button></ons-back-button></div>
+
+			</ons-toolbar>
+
+
+			<div class="container"  id="pagina_Planta">
+
+
+			</div>
+
+
+		</ons-page>
+	</template>
+
+	<!----- Editar Perfil -->
+
+	<template id="EditarPerfil.html">
+		<ons-page id="EditarPerfil">
+			<ons-toolbar>
+				<div class="center" id="Editar Perfil"></div>
+				<div class="left"><ons-back-button></ons-back-button></div>
+
+			</ons-toolbar>
+
+
+			<div class="container" >
+				<br>
+				<div class="row">
+					<div class="col">
+
+						<form enctype="multipart/form-data" id="actualizarPerfilForm" method="post">			<br>
+							<ons-input id="idPropietario" modifier="underbar" name="id" class="btn btn-block" type="text" placeholder="Nombre" style='display: none;' ></ons-input>
+							<ons-input id="nombrePropietario" modifier="underbar" name="nombre" class="btn btn-block" type="text" placeholder="Nombre" float required></ons-input>
+							<ons-input id="correoPropietario" modifier="underbar" name="correo" class="btn btn-block" type="email" placeholder="Correo" float required></ons-input>
+							<ons-input id="clavePropietario" modifier="underbar" name="clave" class="btn btn-block" type="password" placeholder="Clave" float required></ons-input>
+
+						
+
+							<center>
+								<label for="archivoFoto" id="labelArchivo" class="subir">
+									<i class="fas fa-cloud-upload-alt"></i> Subir archivo
+								</label>
+
+								<input  id="archivoFoto" onchange='informacionArchivo()' type="file" style='display: none;' name="foto" accept="image/jpeg" />
+								<br />
+
+							</center>
+
+							<ons-button class="btn btn-block" id="btn-Enviar" onclick="ActualizarPerfil()">Guardar   <i class="fas fa-plus" style="color:#fff;"></i>
+							</ons-button>
+
+						</form>
+
+
+					</div>
+
+
+
+				</div>
+
+
+			</div>
+
+
+			</ons-page>
+		</template>
+
+		<!----- Agregar Planta -->
+
+		<template id="AgregarPlanta.html">
+			<ons-page id="AgregarPlanta">
+				<ons-toolbar>
+					<div class="center" id="Agregar Planta"></div>
+					<div class="left"><ons-back-button></ons-back-button></div>
+
+				</ons-toolbar>
+
+
+				<div class="container" >
+
+					<br>
+					<div class="row">
+						<div class="col">
+
+							<form enctype="multipart/form-data" id="registrarPlantaForm" method="post">
+
+
+
+								<ons-input id="idInvernaderoPlanta" name="id_invernadero" modifier="underbar" class="btn btn-block" type="number" placeholder="ID Invernadero" float></ons-input>
+
+								<ons-input id="nombrePlanta" name="nombre"modifier="underbar" class="btn btn-block" type="text" placeholder="nombre" float></ons-input>
+
+								<ons-input id="cantidadPlanta" name="cantidad"modifier="underbar" class="btn btn-block" type="number" placeholder="Cantidad" float></ons-input>
+
+								<ons-input id="precioPlanta"  name="precio"modifier="underbar" class="btn btn-block" type="number" placeholder="Precio" float></ons-input>
+
+								<ons-input id="descripcionPlanta" name="descripcion" modifier="underbar" class="btn btn-block" type="text" placeholder="Descripcion" float></ons-input>
+
+								<center>
+									<label for="archivoFoto" id="labelArchivo" class="subir">
+										<i class="fas fa-cloud-upload-alt"></i> Subir archivo
+									</label>
+
+									<input  id="archivoFoto" onchange='informacionArchivo()' type="file" style='display: none;' name="foto" accept="image/jpeg" />
+									<br />
+
+								</center>
+							
+								<ons-button class="btn btn-primary btn-block" onclick="GuardarPlantas()" id="btn-GuardarPlantas">Registrar Planta</ons-button>
+							</form>
+
+
+
+
+						</div>
+					</div>
+
+
+				</div>
+
+
+			</ons-page>
+		</template>
+
+		<!----- Agregar Invernadero -->
+
+		<template id="AgregarInvernadero.html">
+			<ons-page id="AgregarInvernadero">
+				<ons-toolbar>
+					<div class="center" id="Agregar Invernadero"></div>
+					<div class="left"><ons-back-button></ons-back-button></div>
+
+				</ons-toolbar>
+
+
+				<div class="container" >
+
+					<div class="row">
+						<div class="col">
+							<br>
+							<!--
+							<ons-input id="idPropietario" modifier="underbar" class="btn btn-block" type="number" placeholder="ID Propietario" style='display: none;'></ons-input>
+							-->
+							<ons-input id="nombreInvernadero" modifier="underbar" class="btn btn-block" type="text" placeholder="Nombre" ></ons-input>
+
+							<ons-input id="ubicacionInvernadero" modifier="underbar" class="btn btn-block" type="text" placeholder="Ubicacion"></ons-input>
+
+							<ons-button class="btn btn-block" id="btn-Enviar" onclick="GuardarInvernadero(nombreInvernadero.value,ubicacionInvernadero.value)">Guardar   <i class="fas fa-plus" style="color:#fff;"></i>
+
+							</div>
+						</div>
+
+
+					</div>
+
+
+				</ons-page>
+			</template>
+
+
+	</body>
+</html>
